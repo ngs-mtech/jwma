@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiJARLocking="true" path="/webmail">
+
+<Resource name="jdbc/jwma"
+            auth="Container"
+            type="javax.sql.DataSource"
+            username="jwma"
+            password="webmail"
+            driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://localhost:5432/jwma"
+            maxActive="8"
+            maxIdle="4"/>
+	
+</Context>
