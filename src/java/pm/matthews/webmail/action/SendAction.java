@@ -24,9 +24,12 @@ public class SendAction  extends BaseAction{
         jession = getSessionValue("jession");
         if(body == null){body = "";}
         messageFrom();
-        sm = new SendMessage(jession);
+        String  host = getSessionValue("smtp_host");
+        String  port = getSessionValue("smtp_port");     
+        
+        sm = new SendMessage(jession, host, port );
         msgStatus = false;
-        msgStatus = writeMessage();
+        msgStatus = writeMessage(); 
         if(msgStatus){msgStatus = sm.send();}
         if(msgStatus){
             log.info("message SENT to "+to+" cc'd to "+cc+" bcc'd to "+bcc);
@@ -67,7 +70,10 @@ public class SendAction  extends BaseAction{
                 String[] message = new String[6];
                 if(body == null){body = "";}
                 if(to == null){to = "";}
-                sm = new SendMessage(jession);
+                String  host = getSessionValue("smtp_host");
+                String  port = getSessionValue("smtp_port");     
+                
+                sm = new SendMessage(jession, host, port );
                 writeMessage();
                 sm.archiveMail(jession.draft);        
             }

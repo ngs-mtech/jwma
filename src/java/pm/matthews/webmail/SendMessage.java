@@ -30,15 +30,22 @@ public class SendMessage {
     private Address[] recipients;
     private boolean success;
     private JwmaSession jession;
+    private String host;
+    private int port;
     
-    public SendMessage(JwmaSession j){
+  
+    
+    public SendMessage(JwmaSession j, String host, String port ){
         success = false;
         jession = j;
         mime = new MimeMessage(jession.mailSession);
         //FIXME: add smtps?
         //FIXME: might we want to auth to a non-local smtp host?
+        this.host = host;
+        this.port = port != null? Integer.parseInt( port ) : -1;
         try{
             tpt = jession.mailSession.getTransport("smtp");
+            
         }
         catch(javax.mail.NoSuchProviderException ex){
             log.debug(ex);
@@ -165,11 +172,12 @@ public class SendMessage {
         //FIXME: this assumes a local smtp server, we might want to authenticate elsewhere?
         success = false;
         try{
-            tpt.connect();
+        	
+            tpt.connect( host, port, null, null );
             tpt.sendMessage(mime, recipients);          
             tpt.close();
             success = true;
-        }
+        } 
         catch(Exception ex){
             log.debug("send message FAILED " + ex);
         }

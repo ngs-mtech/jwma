@@ -48,11 +48,35 @@ public class Init {
         }
         
         file = new File(DIR);
-        if(!file.isDirectory()){
-            file.mkdirs();
-            file = new File(DIR +File.separator+ "data");
-            file.mkdirs();
-            writeDefaultConfig();
+        boolean created = false;
+        if( file.isDirectory() ){
+        	//already available,
+        	created = false;
+        }else{
+        	created = file.mkdirs();
+        	if( !created ){
+        		//the folder is not writable, try other approach
+        		System.out.println( "Unable to create root path for " + file.getAbsolutePath() );
+        		DIR = System.getProperty( "user.home" ) + File.separator + ".jwma" ;
+        		System.out.println( "Creating default folder on:" + DIR );
+        		file = new File( DIR );
+        		if( !file.isDirectory() ){
+        			created = file.mkdirs();
+        			if( !created ){
+        				System.err.println( "Unable to create folder for configuration: " + DIR );
+        			}
+        		}else{
+        			created = false;
+        		}
+        	}
+        }
+        if( created ){
+        	file = new File(DIR +File.separator+ "data");
+        	file.mkdirs();
+        }
+        
+        if(created ){
+        	writeDefaultConfig();
         }
     }
     
@@ -75,38 +99,65 @@ public class Init {
     }
     
     public String[] readConfig(){
-        file = new File(DIR + "/jwma.config");
-        String msg = "Looking for CONFIG at " + file.getAbsolutePath() + ":";
-        log.info(msg);
-        message = message + msg;
+    	InputStream classpathConfig = this.getClass().getResourceAsStream( "/jwma.config" );
+    	Reader configReader;
+    	
+    	if( classpathConfig == null ){
+    		file = new File(DIR + "/jwma.config");
+    		String msg = "Looking for CONFIG at " + file.getAbsolutePath() + ":";
+    		log.info(msg);
+    		message = message + msg;
+    		if( !file.exists() ){
+    			writeDefaultConfig();
+    		}
+    			
+			try {
+				configReader = new FileReader(file);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				configReader = null;
+			}
+    		
+    	}else{
+    		configReader = new InputStreamReader( classpathConfig );
+    	}
+    	
         String configs = "";
-        try{
-            FileReader fr = new FileReader(file);
-            BufferedReader br = new BufferedReader(fr);
-            br.mark(500);
-            String key, value = "";
-            while(br.readLine() != null){
-                br.reset();
-                String s = br.readLine();
-                if(!s.startsWith("#") && !s.equals("")){
-                    String[] item = s.split("=");
-                    key = item[0].replaceAll(" ","");
-                    value = item[1].replaceAll(" ","");
-                    message = message + "key " + key + " value " + value + ":";
-                    configs = configs +  key + ":" + value + ":";
-                }
-                br.mark(500);
-            }
-            br.close();fr.close();
-            configs = configs + "home:" + DIR;
-            message = message + "key home value "+ DIR + ":";
-        }
-        catch(Exception ex){
-            log.debug(ex);
+        if( configReader != null ){
+	        try{
+	            configs = loadConfigFromReader( configReader);
+	            configs = configs + "home:" + DIR;
+	            message = message + "key home value "+ DIR + ":";
+	        }
+	        catch(Exception ex){
+	            log.debug(ex);
+	        }
         }
         String[] res = configs.split(":");
         return res;
     }
+
+	private String loadConfigFromReader(Reader fr) throws IOException {
+		String configs = "";
+		BufferedReader br = new BufferedReader(fr);
+		br.mark(500);
+		String key, value = "";
+		while(br.readLine() != null){
+		    br.reset();
+		    String s = br.readLine();
+		    if(!s.startsWith("#") && !s.equals("")){
+		        String[] item = s.split("=");
+		        key = item[0].replaceAll(" ","");
+		        value = item[1].replaceAll(" ","");
+		        message = message + "key " + key + " value " + value + ":";
+		        configs = configs +  key + ":" + value + ":";
+		    }
+		    br.mark(500);
+		}
+		br.close();fr.close();
+		return configs;
+	}
     /*we try to put the log file in our webmail home folder
      *and set the level of logging detail
      *but we won't be able to manipulate the log4j property file

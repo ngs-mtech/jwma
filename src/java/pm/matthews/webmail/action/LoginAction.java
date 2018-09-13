@@ -73,14 +73,16 @@ public class LoginAction extends BaseAction{
         return res;
     }
     
-    private void doInit(){
+    private void doInit(){ 
         /*we try and buid a file path from WEB-INF
          *this fails if it's a non-exploded war file*/
-        ServletContext sc = context.getServletContext();
+    	ServletContext sc = context.getServletContext();
+        
         String path = sc.getRealPath("/WEB-INF");
         if(path == null){
             path = "";
         }
+        
         Init in = new Init(path);
         String[] conf = in.readConfig();
         for(int i = 0;i<conf.length;i++){

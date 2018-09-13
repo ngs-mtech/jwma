@@ -29,7 +29,7 @@ public class JwmaAuthenticator{
                 mailSession = Session.getInstance(System.getProperties());
             }
             else if(protocol.equals("imaps")){
-                Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+                Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
                 Properties props = new java.util.Properties();
                 props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
                 props.setProperty("mail.imap.socketFactory.fallback", "false");

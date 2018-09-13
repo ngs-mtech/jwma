@@ -6,7 +6,7 @@ import net.sourceforge.stripes.action.Resolution;
 
 public class InitAction extends BaseAction{
     private String view;
-    
+     
     @DefaultHandler
     public Resolution init(){
         view = "/WEB-INF/desktop/login.jsp";
